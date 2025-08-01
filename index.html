@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Gerador de Time & Previsões</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  :root {
+    --azul:#4f8ef7;
+    --roxo:#9b59b6;
+    --bg:#0f1025;
+    --card:#1f2245;
+    --radius:16px;
+    --shadow:0 30px 80px -10px rgba(31,34,69,.65);
+    --transition:.25s cubic-bezier(.4,.2,.2,1);
+    font-family: "Inter", system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body {
+    margin:0;
+    background: linear-gradient(135deg,#0f1025 0%,#1b1f4f 70%);
+    min-height:100vh;
+    color:#f0f6ff;
+    padding:1rem;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  .wrapper {
+    width:100%;
+    max-width:960px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:1.25rem;
+  }
+  .header {
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .title {
+    font-size:1.8rem;
+    font-weight:800;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .sub {
+    font-size:0.85rem;
+    opacity:.75;
+  }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding:1.5rem 1.75rem;
+    position:relative;
+    overflow:hidden;
+    box-shadow: var(--shadow);
+    display:flex;
+    flex-direction:column;
+    gap:1rem;
+    transition:var(--transition);
+  }
+  .labels {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .badge {
+    padding:8px 18px;
+    border-radius:999px;
+    font-weight:700;
+    font-size:0.75rem;
+    display:inline-block;
+    letter-spacing:0.5px;
+  }
+  .rosa { background:#ff6fa7; color:#1f1f1f; }
+  .roxo { background:#8e44ad; color:#fff; }
+  .match-container {
+    display:flex;
+    flex-wrap:wrap;
+    gap:1rem;
+    justify-content:space-between;
+  }
+  .team {
+    flex:1 1 calc(50% - 10px);
+    background:rgba(255,255,255,0.03);
+    border-radius:12px;
+    padding:16px 14px;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    min-width:140px;
+  }
+  .team h2 {
+    margin:0;
+    font-size:1.5rem;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .odds-box {
+    margin-top:4px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .odd {
+    background:rgba(255,255,255,0.08);
+    padding:8px 12px;
+    border-radius:8px;
+    font-weight:600;
+    font-size:0.9rem;
+    display:inline-block;
+    min-width:80px;
+    text-align:center;
+    position:relative;
+  }
+  .minute-display {
+    flex:1 1 100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    gap:4px;
+  }
+  .big-minute {
+    font-size:5rem;
+    font-weight:900;
+    line-height:1;
+    background: linear-gradient(90deg,var(--azul),var(--roxo));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing:1px;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .minute-label {
+    font-size:0.9rem;
+    font-weight:600;
+    background:rgba(255,255,255,0.07);
+    padding:6px 12px;
+    border-radius:8px;
+    margin-top:4px;
+    display:inline-block;
+  }
+  .controls {
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:center;
+    margin-top:4px;
+  }
+  .btn {
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+    font-size:0.9rem;
+    position:relative;
+    overflow:hidden;
+    transition:var(--transition);
+    background: var(--azul);
+    color:#fff;
+  }
+  .btn.secondary {
+    background: rgba(255,255,255,0.08);
+    color:#eef2f7;
+  }
+  .btn:active { transform:scale(.97); }
+  .status {
+    margin-left:auto;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    font-size:0.75rem;
+  }
+  .prediction-box {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:12px;
+    margin-top:4px;
+  }
+  .prediction {
+    background:rgba(255,255,255,0.04);
+    border-radius:12px;
+    padding:12px 14px;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    font-size:0.8rem;
+  }
+  .prediction .minute {
+    font-weight:700;
+    font-size:1.2rem;
+  }
+  .prediction .text {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .chance {
+    display:inline-block;
+    background:rgba(255,255,255,0.08);
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:0.65rem;
+    font-weight:600;
+    margin-top:4px;
+    width:fit-content;
+  }
+  .small { font-size:0.75rem; opacity:.9; }
+  .footer {
+    text-align:center;
+    font-size:0.65rem;
+    opacity:.6;
+    margin-top:6px;
+  }
+  .pulse {
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { transform:scale(1); }
+    50% { transform:scale(1.02); }
+    100% { transform:scale(1); }
+  }
+  .glow {
+    position:relative;
+  }
+  .glow:after {
+    content:"";
+    position:absolute;
+    inset:0;
+    filter:blur(25px);
+    background: linear-gradient(135deg,var(--azul),var(--roxo));
+    opacity:0.35;
+    z-index:-1;
+    border-radius:14px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="header">
+        <div>
+          <div class="title">Gerador &amp; Previsões</div>
+          <div class="sub">Elephantbet · 888btes · Premierbet — minutos automáticos e próximas previsões</div>
+        </div>
+        <div class="labels">
+          <div class="badge rosa">Rosa</div>
+          <div class="badge roxo">Roxo</div>
+        </div>
+      </div>
+
+      <div class="match-container">
+        <div class="team">
+          <h2 id="teamA">Time A</h2>
+          <div class="odds-box">
+            <div class="odd">Odd: <span id="oddA">--</span></div>
+          </div>
+          <div class="small">Favorito / destaque</div>
+        </div>
+
+        <div class="minute-display">
+          <div class="big-minute glow" id="minutes-display">00′</div>
+          <div class="minute-label">Minuto de jogo (1s = +1 minuto)</div>
+          <div class="controls">
+            <button class="btn" id="startPause">Iniciar</button>
+            <button class="btn secondary" id="reset">Resetar</button>
+            <button class="btn secondary" id="regenMatch">Gerar Confronto</button>
+            <div class="status" id="status">Pausado</div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <label class="small" for="setMinute">Definir minuto:</label>
+              <input id="setMinute" type="number" min="0" max="180" value="0" style="width:70px; padding:8px 10px; border-radius:6px; border:none; background:#1f2245; color:#f0f6ff;" />
+              <button class="btn secondary" id="applyMinute" style="padding:8px 14px; font-size:0.8rem;">Aplicar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="team">
+          <h2 id="teamB">Time B</h2>
+          <div class="odds-box">
+            <div class="odd">Odd: <span id="oddB">--</span></div>
+          </div>
+          <div class="small">Underdog / status</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px; padding:16px;">
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <div style="font-weight:700; font-size:1.1rem;">Próximas previsões (próximos 5 minutos)</div>
+          <div style="margin-left:auto;" class="small">Simulação baseada em mudança de odds / destaque</div>
+        </div>
+        <div class="prediction-box" id="predictions">
+          <!-- previsões geradas aqui -->
+        </div>
+      </div>
+
+      <div class="footer">
+        Use “Rosa” e “Roxo” como marcadores visuais; essas previsões são simuladas para ajudar na entrega rápida. Pode estender com lógica real de odds / API depois.
+      </div>
+    </div>
+  </div>
+
+<script>
+  const teams = [
+    "Leões FC", "Torres United", "Azul Atlético", "Roxo Stars",
+    "Dragões Verdes", "Falcões Dourados", "Falcões Dourados", "Tigres Marinhos",
+    "Águias Reais", "Gladiadores", "Feras da Noite", "Cometas", "Vikings"
+  ];
+  const teamAEl = document.getElementById("teamA");
+  const teamBEl = document.getElementById("teamB");
+  const oddAEl = document.getElementById("oddA");
+  const oddBEl = document.getElementById("oddB");
+  const minutesDisplay = document.getElementById("minutes-display");
+  const startPauseBtn = document.getElementById("startPause");
+  const resetBtn = document.getElementById("reset");
+  const regenBtn = document.getElementById("regenMatch");
+  const statusEl = document.getElementById("status");
+  const setMinuteInput = document.getElementById("setMinute");
+  const applyMinuteBtn = document.getElementById("applyMinute");
+  const predictionsContainer = document.getElementById("predictions");
+
+  let minute = 0;
+  let interval = null;
+  let running = false;
+
+  function pad(n) { return String(n).padStart(2,"0") + "′"; }
+  function updateDisplay() { minutesDisplay.textContent = pad(minute); }
+
+  function randomFrom(arr) {
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
+
+  function generateMatch() {
+    let a = randomFrom(teams);
+    let b;
+    do { b = randomFrom(teams); } while(b===a);
+    teamAEl.textContent = a;
+    teamBEl.textContent = b;
+    // odds simuladas entre 1.05x e 8.00x (com variação de “fator de chance”)
+    const baseA = (Math.random() * (8 - 1.05) + 1.05);
+    const baseB = (Math.random() * (8 - 1.05) + 1.05);
+    oddAEl.textContent = baseA.toFixed(2) + "x";
+    oddBEl.textContent = baseB.toFixed(2) + "x";
+    generatePredictions(baseA, baseB);
+  }
+
+  function tick() {
+    minute += 1;
+    updateDisplay();
+    generatePredictions(parseFloat(oddAEl.textContent), parseFloat(oddBEl.textContent));
+    if(minute >= 180){
+      pause();
+      statusEl.textContent = "Máximo";
+    }
+  }
+
+  function start() {
+    if(running) return;
+    running = true;
+    interval = setInterval(tick, 1000);
+    startPauseBtn.textContent = "Pausar";
+    statusEl.textContent = "Rodando";
+  }
+  function pause() {
+    running = false;
+    clearInterval(interval);
+    startPauseBtn.textContent = "Iniciar";
+    statusEl.textContent = "Pausado";
+  }
+  function reset() {
+    pause();
+    minute = 0;
+    updateDisplay();
+    statusEl.textContent = "Resetado";
+    generatePredictions(parseFloat(oddAEl.textContent), parseFloat(oddBEl.textContent));
+  }
+
+  startPauseBtn.addEventListener("click", () => {
+    if(running) pause();
+    else start();
+  });
+  resetBtn.addEventListener("click", reset);
+  regenBtn.addEventListener("click", () => {
+    generateMatch();
+    reset();
+  });
+  applyMinuteBtn.addEventListener("click", () => {
+    const v = parseInt(setMinuteInput.value);
+    if(!isNaN(v) && v >=0){
+      minute = v;
+      updateDisplay();
+      generatePredictions(parseFloat(oddAEl.textContent), parseFloat(oddBEl.textContent));
+    }
+  });
+
+  function generatePredictions(oddA, oddB){
+    // limpa
+    predictionsContainer.innerHTML = "";
+    // lógica simples: nos próximos 5 minutos, muda levemente odds e destaca “Rosa/Roxo”
+    for(let i=1;i<=5;i++){
+      const futureMin = minute + i;
+      // simula variação: aleatório pequeno
+      const deltaA = (Math.random()*0.4 - 0.2);
+      const deltaB = (Math.random()*0.4 - 0.2);
+      const newOddA = Math.max(1.01, (oddA + deltaA)).toFixed(2);
+      const newOddB = Math.max(1.01, (oddB + deltaB)).toFixed(2);
+      // chance de “destaque” (ex: rosa se A virar favorito mais forte)
+      let note = "";
+      if(deltaA < deltaB) note = "Roxo: A perde força";
+      else if(deltaA > deltaB) note = "Rosa: A ganha força";
+      else note = "Equilíbrio";
+
+      const chanceVal = Math.floor(30 + Math.random()*50); // 30% a 80%
+      const pred = document.createElement("div");
+      pred.className = "prediction";
+      pred.innerHTML = `
+        <div class="minute">+${i}′</div>
+        <div class="text">
+          <div><strong>Odds A:</strong> ${newOddA} &nbsp; <strong>B:</strong> ${newOddB}</div>
+          <div class="chance">${note}</div>
+          <div class="small">Prob. mudança: ${chanceVal}%</div>
+        </div>
+      `;
+      predictionsContainer.appendChild(pred);
+    }
+  }
+
+  // inicial
+  generateMatch();
+  updateDisplay();
+</script>
+</body>
+</html>
